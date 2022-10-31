@@ -131,15 +131,15 @@ export const state$ = actions$.pipe(
     const y = s.tutorial.y;
     const x = s.tutorial.x;
 
-    const XX = s.boxes
+    const closestBoxToSmartOne = s.boxes
       .slice()
       .sort(
         (a, b) => Math.hypot(y - a.y, x - a.x) - Math.hypot(y - b.y, x - b.x)
-      );
+      )[0];
     return {
       ...s,
-      tutorial: { ...s.tutorial, content: XX[0].content },
-      closest: XX[0],
+      tutorial: { ...s.tutorial, content: closestBoxToSmartOne.content },
+      closest: closestBoxToSmartOne,
     };
   })
 );
