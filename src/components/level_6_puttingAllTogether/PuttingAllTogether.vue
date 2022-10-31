@@ -17,8 +17,8 @@
   </div>
   <div class="border">
     <div class="header">
-      <div tuttable="1" class="standardElement">A</div>
-      <div class="standardElement">B</div>
+      <div class="standardElement">A</div>
+      <div tuttable="1" class="standardElement">B</div>
       <div class="standardElement">C</div>
       <div tuttable="2" cable class="standardElement">D</div>
       <div tuttable="3" class="standardElement">E</div>
@@ -37,22 +37,8 @@
 
 <script lang="ts">
 import { useObservable } from "@vueuse/rxjs";
-import {
-  animationFrameScheduler,
-  debounceTime,
-  delay,
-  endWith,
-  fromEvent,
-  interval,
-  map,
-  scan,
-  startWith,
-  Subject,
-  takeUntil,
-  takeWhile,
-  tap,
-} from "rxjs";
-import { defineComponent } from "vue";
+import { debounceTime, delay, fromEvent, map, startWith, tap } from "rxjs";
+import { defineComponent, Ref } from "vue";
 import {
   userStartedDrag$,
   state$,
@@ -64,10 +50,6 @@ import {
 import { content } from "./content";
 
 const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
-const invlerp = (x: number, y: number, a: number) => clamp((a - x) / (y - x));
-const clamp = (a: number, min = 0, max = 1) => Math.min(max, Math.max(min, a));
-const range = (x1: number, y1: number, x2: number, y2: number, a: number) =>
-  lerp(x2, y2, invlerp(x1, y1, a));
 
 const getAllElements = () => {
   document.querySelectorAll("[tuttable]").forEach((el) => {
@@ -98,18 +80,17 @@ export default defineComponent({
   data: () => ({
     content: content,
     draging: false,
-    value: useObservable(
+    value: useObservable<number>(
       userEntersBox$.pipe(
         debounceTime(6),
         delay(180),
         map((e) => (e > 23 ? 23 : e)),
         startWith(0)
       )
-    ),
+    ) as Ref<number>,
     pageResize: useObservable(
       fromEvent(window, "resize").pipe(
         tap(() => {
-          console.log("tes");
           getAllElements();
         })
       )
@@ -245,7 +226,7 @@ button:hover {
   width: 100%;
   margin: 0px;
   padding: 0px;
-  height: v-bind("(value**1.01)+'px'");
+  height: v-bind("(value **1.01)+'px'");
   overflow: hidden;
   background-color: rgb(123, 123, 123);
   cursor: grab;

@@ -21,7 +21,7 @@ import PuttingItAllTogether from "./components/level_6_puttingAllTogether/Puttin
 export default defineComponent({
   data: () => {
     return {
-      which: 6,
+      which: 1,
     };
   },
   name: "App",

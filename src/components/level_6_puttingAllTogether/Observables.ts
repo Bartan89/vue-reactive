@@ -1,7 +1,6 @@
 import {
   animationFrameScheduler,
   concatMap,
-  delay,
   exhaustMap,
   fromEvent,
   interval,
@@ -43,7 +42,7 @@ const obs$2 = userNexts$.pipe(
     const startTime = Date.now();
     return interval(0, animationFrameScheduler).pipe(
       map(() => Date.now() - startTime),
-      map((t) => t / 700),
+      map((t) => t / 500),
       map((x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2)),
       takeWhile((t) => t < 1),
       map((t) => ({
