@@ -8,12 +8,11 @@
     class="tutorial"
   >
     <div @mousedown="startDrag($event)" class="draggable">
-      <button>&lt;</button> <button>></button>
+      <button @click="next('backwards', $event, state as State)">&lt;</button>
+      <button @click="next('forwards', $event, state as State)">></button>
     </div>
     <span>
-      Lorem ipsum dolor sit amet consectetur adipisicing elit. Vitae pariatur
-      inventore natus libero possimus dolores ab quaerat officiis iure. Rerum
-      reiciendis ea blanditiis explicabo quam possimus eligendi! Fuga, nam quas!
+      {{ content[(state?.tutorial?.content as number) - 1]?.content }}
     </span>
   </div>
   <div class="border">
@@ -22,15 +21,15 @@
       <div class="standardElement">B</div>
       <div class="standardElement">C</div>
       <div tuttable="2" cable class="standardElement">D</div>
-      <div class="standardElement">E</div>
+      <div tuttable="3" class="standardElement">E</div>
     </div>
     <div class="sidebar">
-      <div class="standardElement">A</div>
+      <div tuttable="5" class="standardElement">A</div>
       <div class="standardElement">B</div>
-      <div tuttable="5" class="standardElement">C</div>
+      <div class="standardElement">C</div>
       <div tuttable="4" class="standardElement">D</div>
       <div class="standardElement">E</div>
-      <div tuttable="3" class="standardElement">F</div>
+      <div class="standardElement">F</div>
       <div class="standardElement">G</div>
     </div>
   </div>
@@ -43,6 +42,7 @@ import {
   debounceTime,
   delay,
   endWith,
+  fromEvent,
   interval,
   map,
   scan,
@@ -58,7 +58,10 @@ import {
   state$,
   userEntersBox$,
   userAddsBox$,
+  State,
+  userNexts$,
 } from "./Observables";
+import { content } from "./content";
 
 const lerp = (x: number, y: number, a: number) => x * (1 - a) + y * a;
 const invlerp = (x: number, y: number, a: number) => clamp((a - x) / (y - x));
@@ -66,27 +69,34 @@ const clamp = (a: number, min = 0, max = 1) => Math.min(max, Math.max(min, a));
 const range = (x1: number, y1: number, x2: number, y2: number, a: number) =>
   lerp(x2, y2, invlerp(x1, y1, a));
 
+const getAllElements = () => {
+  document.querySelectorAll("[tuttable]").forEach((el) => {
+    userAddsBox$.next({
+      content: parseInt(el.getAttribute("tuttable") as string),
+      x: el.getBoundingClientRect().x,
+      y: el.getBoundingClientRect().y,
+      width: el.getBoundingClientRect().width,
+      height: el.getBoundingClientRect().height,
+    });
+  });
+};
+
 export default defineComponent({
   props: {
     title: String,
   },
   mounted: () => {
-    console.log("mounted");
-    let obj = {};
+    getAllElements();
 
-    document.querySelectorAll("[tuttable]").forEach((el) => {
-      console.log("hit?111");
-      userAddsBox$.next({
-        content: el.getAttribute("tuttable") as string,
-        x: el.getBoundingClientRect().x,
-        y: el.getBoundingClientRect().y,
-        width: el.getBoundingClientRect().width,
-        height: el.getBoundingClientRect().height,
-      });
-      // console.log(el.getAttribute("tuttable"), el.getBoundingClientRect());
+    userNexts$.next({
+      originX: -100,
+      originY: window.innerHeight / 2,
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
     });
   },
   data: () => ({
+    content: content,
     draging: false,
     value: useObservable(
       userEntersBox$.pipe(
@@ -94,6 +104,14 @@ export default defineComponent({
         delay(180),
         map((e) => (e > 23 ? 23 : e)),
         startWith(0)
+      )
+    ),
+    pageResize: useObservable(
+      fromEvent(window, "resize").pipe(
+        tap(() => {
+          console.log("tes");
+          getAllElements();
+        })
       )
     ),
     state: useObservable(state$),
@@ -108,13 +126,45 @@ export default defineComponent({
       }
 
       if (state === "leave") {
-        console.log("hit");
         userEntersBox$.next(0);
       }
     },
     startDrag: (event: MouseEvent) => {
       event.preventDefault();
       userStartedDrag$.next(event);
+    },
+    next: (
+      direction: "backwards" | "forwards",
+      event: MouseEvent,
+      state: State
+    ) => {
+      const { x: originX, y: originY } = state.tutorial;
+      if (direction === "forwards") {
+        const nextTarget = state.boxes.find(
+          (e) => e.content === state.tutorial.content + 1
+        );
+        if (nextTarget) {
+          userNexts$.next({
+            originX,
+            originY,
+            x: nextTarget.x,
+            y: nextTarget.y + nextTarget.height,
+          });
+        }
+      }
+      if (direction === "backwards") {
+        const nextTarget = state.boxes.find(
+          (e) => e.content === state.tutorial.content - 1
+        );
+        if (nextTarget) {
+          userNexts$.next({
+            originX,
+            originY,
+            x: nextTarget.x,
+            y: nextTarget.y + nextTarget.height,
+          });
+        }
+      }
     },
   },
 });

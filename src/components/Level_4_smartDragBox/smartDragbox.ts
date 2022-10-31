@@ -3,14 +3,11 @@ import {
   fromEvent,
   map,
   merge,
-  Observable,
-  of,
   scan,
   shareReplay,
   startWith,
   Subject,
   takeUntil,
-  tap,
 } from "rxjs";
 
 export const userStartedDrag$ = new Subject<MouseEvent>();
@@ -65,6 +62,5 @@ export const state$ = actions$.pipe(
     } else {
       return { ...s, smartBox: { ...s.smartBox, color: s.box2.color } };
     }
-  }),
-  tap(console.log)
+  })
 );

@@ -67,7 +67,6 @@ export const state$ = actions$.pipe(
   scan((state: State, command: XX): State => {
     switch (command.action) {
       case "new-box":
-        console.log("hi");
         return { ...state, boxes: [...state.boxes, command.payload] };
       case "smart-box-moved":
         return {
@@ -75,7 +74,6 @@ export const state$ = actions$.pipe(
           smartBox: { ...command.payload },
         };
       default:
-        console.log("hi");
         return { ...state };
     }
   }, intialState),

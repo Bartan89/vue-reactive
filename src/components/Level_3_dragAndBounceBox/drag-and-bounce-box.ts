@@ -33,8 +33,6 @@ const boxMovesBasedOnDrag$ = userStartedDrag$.pipe(
 const boxMovesBasedOnBounce$ = userClickedBounceBox$.pipe(
   repeat(),
   switchMap((y) => {
-    console.log("again?");
-    const startTime = Date.now();
     return interval(0, animationFrameScheduler).pipe(
       map((t) => t / 10),
       map((v) => Math.sin(v)),
